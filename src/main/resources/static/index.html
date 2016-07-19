@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html   lang="en" ng-app="fizzBuzzApp" class="no-js">
+<head>
+	<title>Instestapi</title>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-hQpvDQiCJaD2H465dQfA717v7lu5qHWtDbWNPvaTJ0ID5xnPUlVXnKzq7b8YUkbN" crossorigin="anonymous" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous" />
+	<link rel="stylesheet" href="https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.0-rc.5/angular-material.css" />
+	<link rel="stylesheet" href="https://material.angularjs.org/1.1.0-rc.5/docs.css"  />
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <style>
+	    .tooltipdemoBasicUsage md-toolbar .md-toolbar-tools .md-button,
+		.tooltipdemoBasicUsage md-toolbar .md-toolbar-tools .md-button:hover {
+		  box-shadow: none;
+		  border: none;
+		  transform: none;
+		  -webkit-transform: none; }
+		#processing {  
+		    position:absolute;
+		    top:0;
+		    left:0;
+		    width:100%;
+		    height:100%;
+		    z-index:1000;
+		    background-color:grey;
+		    opacity: .8;
+		 }
+		
+		.ajax-loader {
+		    position: absolute;
+		    left: 50%;
+		    top: 50%;
+		    margin-left: -180px; /* -1 * image width / 2 */
+		    margin-top: -240px;  /* -1 * image height / 2 */
+		    display: block;     
+		}
+		    
+    </style>
+	
+</head>
+<body>
+	<div id="processing" style="display: none">
+		<img src="./css/img/loading.gif" class="ajax-loader" />
+	</div>
+	<nav class="navbar navbar-fixed-top navbar-inverse  " role="navigation" >
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+					data-target="#navbar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">Instestapi</a>
+			</div>
+
+			<div class="collapse navbar-collapse">
+				<ul class="nav navbar-nav">
+					<li><a href="#/main">Main</a></li>
+				</ul>
+				
+			</div> 
+		</div>
+	</nav>
+	
+	<div id="main"  >
+		<div class="alert alert-danger" ng-show="error">{{error}}</div>
+		<div ng-view="" ></div>
+	</div> 
+	
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.js"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-route.js"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-resource.js"></script>
+	
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-aria.min.js"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-messages.min.js"></script>
+	<script type="text/javascript" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-114/svg-assets-cache.js"></script>
+	<script type="text/javascript" src="https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.0-rc.5/angular-material.js"></script>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-animate.min.js"></script>
+	
+	<script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.3.3.js"></script>
+	
+	<script type="text/javascript" src="./js/app.js"></script>
+	
+	
+</body>
+</html>
