@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,17 +21,36 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inacio.boueres.instestapi.entity.InsteFolowed;
 import com.inacio.boueres.instestapi.entity.InsteReturn;
 import com.inacio.boueres.instestapi.exceptions.UserNotFoundException;
-
+/**
+ * 
+ * @author Inacio da Cunha Boueres Filho
+ * This service is responsible to start a TimeTask to check for new updates;
+ * start the download task for new users;
+ * retrieve the download information from a user
+ * and remove a user from memory
+ */
 @Service
 public class RetrieveNewPostsService {
 
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-
+	/*
+	 * Usually I would store the information on a DB, but in order to keep it simple
+	 * I decided to maintain it in memory
+	 * */
 	private static final Map<String, InsteReturn> followed = new HashMap<String, InsteReturn>();
 	
+	/*
+	 * Inject the Service responsible to start the download task
+	 * */
 	@Autowired
 	AsyncImageLoaderService asyncImageLoaderService;
 
+	/**
+	 * TimeTask responsible to check if have new updates every 30s, 
+	 * for every user followed it I'll try to retrieve information 
+	 * until reache the newest information on memory, and than add to 
+	 * the collection, as it is a TreeSet, it ensure that all insert will be
+	 * sorted and unique
+	 */
 	@Scheduled(fixedRate = 30000)
 	private void updateFolloweds() {
 		for (String user : followed.keySet()) {
@@ -49,6 +67,14 @@ public class RetrieveNewPostsService {
 		}
 	}
 
+	/**
+	 * 
+	 * @param user
+	 * @return user informations
+	 * Check if user requested is Already in memory,
+	 * if it is, return it information else, request the user information 
+	 * a first time, and than start the task to download the remaining information in background
+	 */
 	public InsteReturn getImages(String user) {
 		if (followed.containsKey(user)) {
 			return followed.get(user);
@@ -65,6 +91,11 @@ public class RetrieveNewPostsService {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return list of followed users
+	 * Retrieve a list of users that are been followed, with the amount of media in memory
+	 */
 	public Collection<InsteFolowed> listActiveFolowed(){
 		TreeSet<InsteFolowed> ret = new TreeSet<InsteFolowed>();
 		
@@ -78,6 +109,12 @@ public class RetrieveNewPostsService {
 		return ret;
 	}
 	
+	/**
+	 * 
+	 * @param user
+	 * Remove the user from memory and stop the download task if its active
+	 * 
+	 */
 	public void deleteUser(String user){
 		if(!followed.get(user).getMore_available()){
 			followed.remove(user);
@@ -87,12 +124,22 @@ public class RetrieveNewPostsService {
 		}
 	}
 
+	/**
+	 * 
+	 * @param user
+	 * @param feed
+	 * @return
+	 * 
+	 * Get the information from the server based on the last id updated, this routine ensures that even if
+	 * some exception occur, it will restart from the last media downloaded
+	 * 
+	 */
 	private InsteReturn getImages(String user, InsteReturn feed) {
 		InsteReturn ret = new InsteReturn();
 		try {
+			//get the media based on last media
 			String url = "https://www.instagram.com/" + user + "/media";
 			if (feed != null) {
-//				String lastId = feed.getItems().get(feed.getItems().size() - 1).getId();
 				String lastId = feed.getItems().last().getId();
 				url = "https://www.instagram.com/" + user + "/media?max_id=" + lastId;
 			}
@@ -100,7 +147,6 @@ public class RetrieveNewPostsService {
 			URL obj = new URL(url);
 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-			// optional default is GET
 			con.setRequestMethod("GET");
 
 			int responseCode = con.getResponseCode();
@@ -114,6 +160,7 @@ public class RetrieveNewPostsService {
 			}
 			in.close();
 
+			//read information from returned Json
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			try {
@@ -127,12 +174,12 @@ public class RetrieveNewPostsService {
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new UserNotFoundException();
-			} catch (NumberFormatException e) { // Can try to pass something
-												// else to rules.id that expect
-												// a BigDecimal
+			} catch (NumberFormatException e) {  
 				e.printStackTrace();
 				throw new UserNotFoundException();
 			}
+			
+			//Add downloaded media, as the collection is a treeSet, it will be unique and ordered 
 			if (feed == null) {
 				return ret;
 			} else {
@@ -149,17 +196,21 @@ public class RetrieveNewPostsService {
 
 	}
 
+	/**
+	 * 
+	 * @param user
+	 * @param feed
+	 * @return
+	 * 
+	 * Get the information from the server based on the until the newest media
+	 * 
+	 */
 	private InsteReturn getLasterImages(String user, InsteReturn feed, Long lastPhoto) {
 		InsteReturn ret = new InsteReturn();
 		try {
-//			String url = "https://www.instagram.com/" + user + "/media";
-//			if (feed != null) {
-//				String lastId = feed.getItems().get(0).getId();
-//				url = "https://www.instagram.com/" + user + "/media?min_id=" + lastId;
-//			}
+			//get the media based on last media
 			String url = "https://www.instagram.com/" + user + "/media";
 			if (feed != null) {
-//				String lastId = feed.getItems().get(feed.getItems().size() - 1).getId();
 				String lastId = feed.getItems().last().getId();
 				url = "https://www.instagram.com/" + user + "/media?max_id=" + lastId;
 			}
@@ -167,11 +218,8 @@ public class RetrieveNewPostsService {
 			URL obj = new URL(url);
 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-			// optional default is GET
 			con.setRequestMethod("GET");
 
-			// add request header
-			// con.setRequestProperty("User-Agent", USER_AGENT);
 
 			int responseCode = con.getResponseCode();
 
@@ -183,7 +231,7 @@ public class RetrieveNewPostsService {
 				response.append(inputLine);
 			}
 			in.close();
-
+			//read information from returned Json
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			try {
@@ -194,11 +242,16 @@ public class RetrieveNewPostsService {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
-			} catch (NumberFormatException e) { // Can try to pass something
-												// else to rules.id that expect
-												// a BigDecimal
+			} catch (NumberFormatException e) {  
 				e.printStackTrace();
 			}
+			
+			
+			/*
+			 * check if the date of the newest download is lesser than the newest photo on memory,
+			 * it will perform the method until reach this condicion 
+			 */
+		
 			if (feed == null) {
 				if(ret.getItems().last().getCreated_time()<lastPhoto){
 					ret.setMore_available_laster(false);
@@ -208,7 +261,6 @@ public class RetrieveNewPostsService {
 				return ret;
 			} else {
 				feed.getItems().addAll(ret.getItems());
-//				if(ret.getItems().get(ret.getItems().size()-1).getCreated_time()<lastPhoto){
 				if(ret.getItems().last().getCreated_time()<lastPhoto){
 					feed.setMore_available_laster(false);
 				}else{
